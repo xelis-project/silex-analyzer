@@ -1,11 +1,11 @@
-# XELIS VM - XVM
+# silex-analyzer
 
 Silex language support for the [XELIS VM](https://github.com/xelis-project/xelis-vm).
 
 Silex is the Rust-inspired language compiled to XVM bytecode. Source files use the
 `.slx` extension; compiled modules use `.slxc`.
 
-> Work in progress.
+Compiler-backed analysis and editor assistance for Silex.
 
 ## Features
 
@@ -37,7 +37,25 @@ Silex is the Rust-inspired language compiled to XVM bytecode. Source files use t
 
 - Unmatched and unclosed `()`, `{}` and `[]` (ignoring strings and comments)
 - Duplicate declarations, unknown function calls, builtin arity mismatches and unused variables
-- Quick fixes for stray brackets and unused declarations
+- Quick fixes for stray brackets and unused `let` bindings, preserving initializer side effects
+- Debounced CLI compiler errors for saved and unsaved buffers, with locations in the Problems panel
+- Compiler results replace heuristic semantic warnings; unused-variable lint remains active
+
+Install the [Silex CLI](https://github.com/xelis-project/silex-cli):
+
+```bash
+cargo install --git https://github.com/xelis-project/silex-cli --bin silex-cli
+```
+
+The default executable is `silex-cli`. Set `silex-analyzer.cliPath` to its absolute path if Cargo’s bin directory is absent from VS Code’s PATH (typically `/home/<username>/.cargo/bin/silex-cli`). Compiler checks never run your program or write artifacts into your workspace.
+
+Settings:
+
+- `silex-analyzer.cliPath`: CLI executable path
+- `silex-analyzer.diagnostics.enable`: enable diagnostics (default `true`)
+- `silex-analyzer.diagnostics.delay`: edit debounce in milliseconds (default `400`)
+
+Run **Silex Analyzer: Check Current File** to refresh diagnostics. CLI execution requires a trusted workspace. If the CLI is missing, local lint and IntelliSense remain available; details appear in the `silex-analyzer` output channel. The current CLI reports its first compiler error as text; errors without a source location appear at the start of the file.
 
 ## Development
 
@@ -51,8 +69,9 @@ Press `F5` to launch the extension host with the example folder.
 
 ## Tests
 
-`npm test` runs two suites:
+`npm test` runs three suites:
 
+- `test/analyzer.test.cjs` covers compiler error spans, unsaved buffers, cancellation, missing executables and temporary-file cleanup with a fixture CLI.
 - `test/grammar.test.cjs` tokenizes real Silex constructs with `vscode-textmate` and asserts scopes.
 - `test/language.test.cjs` covers type classification, receiver inference, symbol scanning and builtin data.
 

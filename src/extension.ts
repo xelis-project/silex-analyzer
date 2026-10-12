@@ -20,6 +20,22 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(
         diagnostics,
+        vscode.commands.registerCommand('silex-analyzer.check', () => {
+            const document = vscode.window.activeTextEditor?.document;
+            if (document?.languageId === LANGUAGE_ID) { diagnostics.update(document); }
+        }),
+        vscode.workspace.onDidChangeConfiguration(event => {
+            if (event.affectsConfiguration('silex-analyzer')) {
+                for (const document of vscode.workspace.textDocuments) {
+                    if (document.languageId === LANGUAGE_ID) { diagnostics.update(document); }
+                }
+            }
+        }),
+        vscode.workspace.onDidGrantWorkspaceTrust(() => {
+            for (const document of vscode.workspace.textDocuments) {
+                if (document.languageId === LANGUAGE_ID) { diagnostics.update(document); }
+            }
+        }),
         vscode.languages.registerHoverProvider(LANGUAGE_ID, new XelHoverProvider()),
         vscode.languages.registerCompletionItemProvider(
             LANGUAGE_ID,

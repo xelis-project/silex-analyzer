@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 const OPEN_TO_CLOSE: { [key: string]: string } = { '(': ')', '{': '}', '[': ']' };
 const UNCLOSED_PATTERN = /Unclosed '([^']+)'/;
-const UNUSED_PATTERN = /Unused (?:let|const) '([^']+)'/;
+const UNUSED_PATTERN = /Unused let '([^']+)'/;
 
 export class XelCodeActionProvider implements vscode.CodeActionProvider {
     public static readonly providedCodeActionKinds = [vscode.CodeActionKind.QuickFix];
@@ -16,7 +16,7 @@ export class XelCodeActionProvider implements vscode.CodeActionProvider {
         const actions: vscode.CodeAction[] = [];
 
         for (const diagnostic of context.diagnostics) {
-            if (diagnostic.source !== 'xvm') {
+            if (diagnostic.source !== 'silex-analyzer') {
                 continue;
             }
             const code = typeof diagnostic.code === 'string' ? diagnostic.code : '';
@@ -49,15 +49,10 @@ export class XelCodeActionProvider implements vscode.CodeActionProvider {
                 if (!name) {
                     continue;
                 }
-                const line = document.lineAt(diagnostic.range.start.line);
-                const declaration = new RegExp(`^\\s*(?:let|const)\\s+${name}\\b`);
-                if (!declaration.test(line.text) || line.text.includes(',')) {
-                    continue;
-                }
-                const action = new vscode.CodeAction(`Remove unused '${name}'`, vscode.CodeActionKind.QuickFix);
+                const action = new vscode.CodeAction(`Ignore unused '${name}' with '_'`, vscode.CodeActionKind.QuickFix);
                 action.diagnostics = [diagnostic];
                 action.edit = new vscode.WorkspaceEdit();
-                action.edit.delete(document.uri, line.rangeIncludingLineBreak);
+                action.edit.replace(document.uri, diagnostic.range, '_');
                 actions.push(action);
             }
         }

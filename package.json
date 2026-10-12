@@ -1,14 +1,14 @@
 {
-  "name": "xelis-vscode",
-  "displayName": "XELIS VM (Silex)",
-  "description": "Silex language support for the XELIS VM (XVM): syntax highlighting and IntelliSense",
+  "name": "silex-analyzer",
+  "displayName": "silex-analyzer",
+  "description": "Silex language analysis: compiler errors, lint diagnostics, suggestions and IntelliSense",
   "version": "0.0.1",
   "publisher": "xelis",
   "license": "BSD-3-Clause",
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xelis-project/xelis-vscode.git"
+    "url": "https://github.com/xelis-project/silex-vscode.git"
   },
   "engines": {
     "vscode": "^1.91.0"
@@ -43,6 +43,35 @@
         "scopeName": "source.xvm",
         "path": "./syntaxes/xvm.tmLanguage.json"
       }
+    ],
+    "configuration": {
+      "title": "Silex Analyzer",
+      "properties": {
+        "silex-analyzer.cliPath": {
+          "type": "string",
+          "default": "silex-cli",
+          "scope": "machine",
+          "description": "Path to the Silex CLI executable."
+        },
+        "silex-analyzer.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable compiler errors and local lint diagnostics."
+        },
+        "silex-analyzer.diagnostics.delay": {
+          "type": "number",
+          "default": 400,
+          "minimum": 0,
+          "maximum": 5000,
+          "description": "Delay in milliseconds before checking edited buffers."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "silex-analyzer.check",
+        "title": "Silex Analyzer: Check Current File"
+      }
     ]
   },
   "scripts": {
@@ -50,12 +79,19 @@
     "compile": "tsc -p ./",
     "watch": "tsc -p -watch ./",
     "pretest": "npm run compile",
-    "test": "node --test test/grammar.test.cjs test/language.test.cjs"
+    "test": "node --test test/*.test.cjs"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/vscode": "^1.91.0",
     "typescript": "^5.5.3",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.2.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Local language features are available; CLI execution requires a trusted workspace."
+    }
   }
 }
